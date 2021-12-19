@@ -2,7 +2,6 @@
 using Scheduling_Application.Controller;
 using System;
 using System.IO;
-using System.Data;
 using System.Windows.Forms;
 
 namespace Scheduling_Application.Views
@@ -20,7 +19,7 @@ namespace Scheduling_Application.Views
         string[] startSplitter;
         string[] endSplitter;
         string filter;
-
+        string Test;
         string path = string.Format($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\Scheudling_Application\\Scheduling_App\\Temp\\Timestamp.txt");
 
         public calendarForm(string user, DateTime loginTime)
@@ -28,6 +27,11 @@ namespace Scheduling_Application.Views
             InitializeComponent();
 
             loggedIn = loginTime.AddMinutes(15);
+
+
+
+
+            Test = loggedIn.ToString("yyyy-MM-dd hh:mm");
 
             currentUser = user;
 
@@ -39,13 +43,18 @@ namespace Scheduling_Application.Views
 
         public void getUpComingAppointment()
         {
-            var reminder = dbController.populateList($"SELECT title, customerId, start FROM appointment WHERE start = '{loggedIn.ToString("yyyy-MM-dd hh:mm")}%'");
 
-            foreach (var appt in reminder)
+            var reminder = dbController.populateList($"SELECT title, customerId, start FROM appointment WHERE start LIKE '{Test}%'");
+
+            if (reminder != null)
             {
-                string customerName = client_scheduleDataSet.customer.Where(c => c.customerId == appt.customerId).ToString();
+                foreach (var appt in reminder)
+                {
+                    int id = appt.customerId;
+                    string customerName = dbController.getValue($"SELECT customerName FROM customer WHERE customerId = '{id}'").ToString();
 
-                MessageBox.Show($"You have an appointment: {appt.title} with {customerName} at {appt.start}");
+                    MessageBox.Show($"You have an appointment: {appt.title} with {customerName} at {appt.start.AddHours(12).ToLocalTime()}");
+                }
             }
 
         }
@@ -158,6 +167,7 @@ namespace Scheduling_Application.Views
             }
 
             this.appointmentTableAdapter.Fill(this.client_scheduleDataSet.appointment);
+
             // append to file
             using (StreamWriter writer = File.AppendText(path))
             {

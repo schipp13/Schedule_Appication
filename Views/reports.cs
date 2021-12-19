@@ -21,8 +21,6 @@ namespace Scheduling_App.Views
         {
             InitializeComponent();
             currentUser = user;
-
-
         }
 
         private void reportsForm_Load(object sender, EventArgs e)
@@ -40,10 +38,9 @@ namespace Scheduling_App.Views
 
             var typeAmount = client_scheduleDataSet.appointment.Where(a => a.start == currentMonthStart && a.start == currentMonthEnd)
                             .GroupBy(a => a.type)
-                            .Select(apt => new { Type = apt.Key, Count = apt.Count() });
+                            .Select(apt => new {Type = apt.Key, Count = apt.Count()});
 
             apptsByType.DataSource = typeAmount.ToArray();
-
         }
 
         private void customerNameComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -63,9 +60,7 @@ namespace Scheduling_App.Views
 
         private void backButton_Click(object sender, EventArgs e)
         {
-
             this.Close();
-
         }
 
 
@@ -76,9 +71,9 @@ namespace Scheduling_App.Views
             // Used lambda and LINQ to get the appointments by type for the current month and return the amount of each type
             if (reports.SelectedTab == apptByType)
             {
-                var typeAmount = client_scheduleDataSet.appointment.Where(a => a.start == currentMonthStart && a.start == currentMonthEnd)
-      .GroupBy(a => a.type)
-      .Select(apt => new { Type = apt.Key, Count = apt.Count() });
+                var typeAmount = client_scheduleDataSet.appointment.Where(a => a.start.Date >= currentMonthStart.Date && a.start.Date <= currentMonthEnd.Date)
+                    .GroupBy(a => a.type)
+                    .Select(apt => new { Type = apt.Key, Count = apt.Count() });
 
                 apptsByType.DataSource = typeAmount.ToArray();
             }
@@ -93,13 +88,12 @@ namespace Scheduling_App.Views
             else
             {
                 customerId = Convert.ToInt32(dbController.getValue($"SELECT customerId FROM customer WHERE customerName = '{customerNameComboBox.Text}'"));
+
                 // Used a lambda for this to select the customersId to get the appointments for the selected customer from the combo box.
                 var customerAppointment = client_scheduleDataSet.appointment.Where(x => x.customerId == customerId).ToList();
 
                 customerApptsSchedule.DataSource = customerAppointment.ToArray();
-
             }
-
         }
     }
 }

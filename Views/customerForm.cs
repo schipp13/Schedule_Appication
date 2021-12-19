@@ -26,7 +26,7 @@ namespace Scheduling_Application.Views
         {
             if (String.IsNullOrEmpty(customerNameTextBox.Text))
             {
-                MessageBox.Show("Please enter a name for the customer"); 
+                MessageBox.Show("Please enter a name for the customer");
             }
             if (String.IsNullOrEmpty(phoneTextBox.Text))
             {

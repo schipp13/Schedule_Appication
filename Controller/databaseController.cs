@@ -43,12 +43,24 @@ namespace Scheduling_Application.Controller
             using (MySqlCommand cmd = new MySqlCommand(query, connection))
             {
                 MySqlDataReader reader = cmd.ExecuteReader();
-                var appointmentList = new List<appointment>();
+
+
+
                 while (reader.Read())
                 {
-                    appointmentList.Add(new appointment { title = reader.GetString(0), start = reader.GetDateTime(1) });
+                    try
+                    {
+                        var appointmentList = new List<appointment>();
+
+                        appointmentList.Add(new appointment { title = reader.GetString(0), customerId = reader.GetInt32(1), start = reader.GetDateTime(2) });
+
+                        upComming = appointmentList.ToArray();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
                 }
-                upComming = appointmentList.ToArray();
             }
             connection.Close();
             return upComming;

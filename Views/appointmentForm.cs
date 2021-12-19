@@ -39,7 +39,7 @@ namespace Scheduling_Application.Views
             this.Close();
         }
 
-       public void appointmentInfoValidator()
+        public void appointmentInfoValidator()
         {
             if (String.IsNullOrEmpty(titleTextBox.Text))
             {
@@ -71,7 +71,7 @@ namespace Scheduling_Application.Views
             userId = Convert.ToInt32(dbController.getValue($"SELECT userId FROM user WHERE userName = '{currentUser}'"));
 
             // Check to see if appointment is within buisness hours
-            withinBusinessHours = validHours(startTimeDatePicker.Value.ToLocalTime(), endTimeDatePicker.Value.ToLocalTime());
+            withinBusinessHours = validHours(startTimeDatePicker.Value, endTimeDatePicker.Value);
             if (withinBusinessHours == true)
             {
                 // Check if appointment exists between start and end time
@@ -172,14 +172,34 @@ namespace Scheduling_Application.Views
 
         private bool validHours(DateTime startTime, DateTime endTime)
         {
-            string maxValue = "17:00:00", minValue = "08:00:00";
-            start = startTime.ToUniversalTime().ToString();
-            end = endTime.ToUniversalTime().ToString();
+            bool valid = false;
 
-            startDateTimeSplit = start.Split(' ');
-            endDateTimeSplit = end.Split(' ');
+            TimeSpan minTime = new TimeSpan(8, 0, 0), maxTime = new TimeSpan(17, 0, 0);
 
-            return TimeSpan.Parse(startDateTimeSplit[1]) >= TimeSpan.Parse(minValue) && TimeSpan.Parse(endDateTimeSplit[1]) <= TimeSpan.Parse(maxValue);
+            TimeSpan appointmentStart = startTime.TimeOfDay;
+            TimeSpan appointmentEnd = endTime.TimeOfDay;
+
+            int startBeforeOpened = TimeSpan.Compare(appointmentStart, minTime);
+
+            int startAfterClose = TimeSpan.Compare(appointmentStart, maxTime);
+
+            int endResult = TimeSpan.Compare(appointmentEnd, maxTime);
+
+
+            if (startBeforeOpened < 0) // Checks to see if start time is before 8am
+            {
+                valid = false;
+            }
+            else if (startBeforeOpened >= 0 && endResult <= 0) // Checks to see if start time is within 8 and 5
+            {
+                valid = true;
+            }
+            else // start time is past 5pm
+            {
+                valid = false;
+            }
+
+            return valid;
         }
 
         private void appointmentForm_Load(object sender, EventArgs e)
@@ -203,6 +223,7 @@ namespace Scheduling_Application.Views
                                            contact = appointment.contact,
                                            type = appointment.type,
                                            url = appointment.url,
+
                                        };
 
                 foreach (var appt in appointmentQuery)
@@ -213,6 +234,7 @@ namespace Scheduling_Application.Views
                     contactComboBox.Text = appt.contact;
                     typeComboBox.Text = appt.type;
                     urlTextBox.Text = appt.url;
+
                 }
 
                 var customerQuery = from cust in client_scheduleDataSet.customer
@@ -232,10 +254,10 @@ namespace Scheduling_Application.Views
                 endDateTimeSplit = end.Split(' ');
 
                 startDateTimePicker.Value = Convert.ToDateTime(startDateTimeSplit[0]);
-                startTimeDatePicker.Value = Convert.ToDateTime(startDateTimeSplit[1]);
+                startTimeDatePicker.Value = Convert.ToDateTime(startDateTimeSplit[1]).AddHours(12).ToLocalTime();
 
                 endDateTimePicker.Value = Convert.ToDateTime(endDateTimeSplit[0]);
-                endTimeDatePicker.Value = Convert.ToDateTime(endDateTimeSplit[1]);
+                endTimeDatePicker.Value = Convert.ToDateTime(endDateTimeSplit[1]).AddHours(12).ToLocalTime();
 
             }
         }
